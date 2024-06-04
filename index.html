@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Library</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        label, input, button {
+            margin: 10px 0;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .result-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Video Library</h1>
+    <form id="queryForm">
+        <label for="media_type">Media Type:</label>
+        <input type="text" id="media_type" name="media_type" placeholder="e.g., Video Cassette, DVD">
+        
+        <label for="actors">Actor:</label>
+        <input type="text" id="actors" name="actors" placeholder="e.g., Keanu Reeves">
+        
+        <label for="release_year">Year:</label>
+        <input type="number" id="release_year" name="release_year" placeholder="e.g., 2024">
+        
+        <button type="submit">Search</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('queryForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            let media_type = document.getElementById('media_type').value;
+            let actors = document.getElementById('actors').value;
+            let release_year = document.getElementById('release_year').value;
+            
+            let queryParams = new URLSearchParams();
+            if (media_type) queryParams.append('media_type', media_type);
+            if (actors) queryParams.append('actors', actors);
+            if (release_year) queryParams.append('release_year', release_year);
+
+            fetch(`search.php?${queryParams.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    let resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '';
+                    if (data.length > 0) {
+                        console.log(data);
+                        data.forEach(item => {
+                            let div = document.createElement('div');
+                            div.className = 'result-item';
+                            div.innerHTML = `<strong>title:</strong> ${item.title}<br>
+                                             <strong>release_year:</strong> ${item.release_year}<br>
+                                             <strong>media_type:</strong> ${item.media_type}<br>
+                                             <strong>director:</strong> ${item.director}<br>
+                                             <strong>actors:</strong> ${item.actors}<br>
+                                             <strong>genres:</strong> ${item.genres}<br>
+                                             <strong>country:</strong> ${item.country}`;
+                            resultsDiv.appendChild(div);
+                        });
+                    } else {
+                        resultsDiv.innerHTML = 'No results found';
+                    }
+
+                    // Сохраняем результаты в localStorage
+                    localStorage.setItem('lastQuery', JSON.stringify(data));
+                });
+        });
+
+        // Загружаем результаты из localStorage при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            let savedResults = localStorage.getItem('lastQuery');
+            if (savedResults) {
+                let resultsDiv = document.getElementById('results');
+                JSON.parse(savedResults).forEach(item => {
+                    let div = document.createElement('div');
+                    div.className = 'result-item';
+                    div.innerHTML = `<strong>title:</strong> ${item.title}<br>
+                                     <strong>release_year:</strong> ${item.release_year}<br>
+                                     <strong>media_type Type:</strong> ${item.media_type}<br>
+                                     <strong>director:</strong> ${item.director}<br>
+                                     <strong>actors:</strong> ${item.actors}<br>
+                                     <strong>genre:</strong> ${item.genres}<br>
+                                     <strong>country:</strong> ${item.country}`;
+                    resultsDiv.appendChild(div);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
